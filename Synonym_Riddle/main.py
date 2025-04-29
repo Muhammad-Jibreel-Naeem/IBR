@@ -1,62 +1,54 @@
-def is_valid_move(grid, row, col, number):
-	for x in range(9):
-		if grid[row][x] == number:
-			return False
-
-	for x in range(9):
-		if grid[x][col] == number:
-			return False
-
-	corner_row = row - row % 3
-	corner_col = col - col % 3
-
-	for x in range(3):
-		for y in range(3):
-			if grid[corner_row + x][corner_col + y] == number:
-				return False
-
-	return True
+import nltk, os, random;
+from code_guess import play_game
+from nltk.corpus import wordnet;
 
 
-def solve(grid, row, col):
-	if col == 9:
-		if row == 8:
-			return True
-		row += 1
-		col = 0
+def load_words(filename='words.txt'):
+	if not os.path.isfile(filename):
+		print("That file doesn't exist. ❌❎");
+	else:
+		with open(filename, 'r') as f:
+			return [line.strip().lower() for line in f];
 
-	if grid[row][col] > 0:
-		return solve(grid, row, col + 1)
+def get_definition(word):
+	synset = wordnet.synsets(word);
+	clue = synset[0].definition() if synset else False;
+	return clue;
 
-	for num in range(1, 10):
-		if is_valid_move(grid, row, col, num):
+score = 0
 
-			grid[row][col] = num
+def play_game(words):
 
-			if solve(grid, row, col + 1):
-				return True
-
-			grid[row][col] = 0
-
-	return False
+	while True:
+		word = random.choice(words);
+		clue = get_definition(word);
 
 
+		if not clue:
+			continue;
+		break;
+	print(f'Clue: {clue} 🧩 \n');
+	print(f'Length of word: {len(word)} 📏\n')
+	global score;
+	guess = input('Guess the word: ');
+
+	if guess.lower() == word.lower():
+		score+=1;
+		print(f'Correct! Your score is: {score} \n');
+	elif guess.lower() == 'q':
+		exit()
+	elif guess.lower() == 'answer':
+		print(f'The word was: {word} \n')
+	else:
+		print(f'Incorrect! The word was: {word} \n');
 
 
-grid = [[0, 0, 0, 0, 0, 0, 6, 8, 0],
-        [0, 0, 0, 0, 7, 3, 0, 0, 9],
-        [3, 0, 9, 0, 0, 0, 0, 4, 5],
-        [4, 9, 0, 0, 0, 0, 0, 0, 0],
-        [8, 0, 3, 0, 5, 0, 9, 0, 2],
-        [0, 0, 0, 0, 0, 0, 0, 3, 6],
-        [9, 6, 0, 0, 0, 0, 3, 0, 8],
-        [7, 0, 0, 6, 8, 0, 0, 0, 0],
-        [0, 2, 8, 0, 0, 0, 0, 0, 0]]
 
-if solve(grid, 0, 0):
-	for i in range(9):
-		for j in range(9):
-			print(grid[i][j], end = '  ')
-		print()
-else:
-	print('No solution for this sudoku!')
+if __name__ == '__main__':
+	print("Welcome to my Synonym Riddle! 🎮 ('q' to quit). \n");
+	while True:
+		words = load_words()
+		play_game(words)
+	score = 0;
+
+	print('Your score is:', score)
